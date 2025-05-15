@@ -4,8 +4,8 @@ import { OPENROUTER_API_KEY, OPENROUTER_API_URL, SAFE_CONTENT_LENGTH } from './c
  * Helper function for debug logging
  */
 function debugLog(message: string, data?: any) {
-  const DEBUG = process.env.NODE_ENV !== 'production';
-  if (DEBUG) {
+  // Only log in development environment
+  if (process.env.NODE_ENV === 'development') {
     console.log(`[AIUtils Debug] ${message}`);
     if (data !== undefined) {
       try {
@@ -98,7 +98,7 @@ ${truncatedContent}`
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${OPENROUTER_API_KEY}`,
-        'HTTP-Referer': 'https://ai-flashcards-app.vercel.app',
+        'HTTP-Referer': typeof window !== 'undefined' ? window.location.origin : 'https://ai-flashcards-app.vercel.app',
         'X-Title': 'AI Flashcards App'
       },
       body: JSON.stringify(requestBody)

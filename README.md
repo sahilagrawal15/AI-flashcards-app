@@ -195,7 +195,17 @@ The application can be deployed on Vercel:
 
 [![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/yourusername/ai-flashcards-app)
 
-Make sure to add all the environment variables in your Vercel project settings.
+Add the following environment variables in your Vercel project settings:
+- `NEXT_PUBLIC_SUPABASE_URL` - Your Supabase project URL
+- `NEXT_PUBLIC_SUPABASE_ANON_KEY` - Your Supabase anonymous key
+- `OPENROUTER_API_KEY` - Your OpenRouter API key (marked as "Environment Variable" type to keep it server-side only)
+
+**Important Note for Vercel Deployment**:
+The application has been optimized for Vercel deployment with the following changes:
+1. Environment variables have been moved to `.env.local` for local development
+2. OpenRouter API key now uses `OPENROUTER_API_KEY` (not prefixed with `NEXT_PUBLIC_`) to ensure it stays server-side
+3. The production build is optimized with all console logs removed
+4. The application is configured to use `output: 'standalone'` for better performance
 
 ### Docker Deployment
 

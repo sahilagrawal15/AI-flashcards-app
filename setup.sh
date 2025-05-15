@@ -39,7 +39,7 @@ echo "NEXT_PUBLIC_SUPABASE_URL=$supabase_url" >> .env.local
 echo "NEXT_PUBLIC_SUPABASE_ANON_KEY=$supabase_anon_key" >> .env.local
 
 if [ -n "$openrouter_api_key" ]; then
-  echo "NEXT_PUBLIC_OPENROUTER_API_KEY=$openrouter_api_key" >> .env.local
+  echo "OPENROUTER_API_KEY=$openrouter_api_key" >> .env.local
 fi
 
 echo ""
