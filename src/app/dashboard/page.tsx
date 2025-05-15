@@ -8,6 +8,7 @@ import { Deck, getDecks, createDeck } from '../../lib/api';
 import { OPENROUTER_API_KEY, OPENROUTER_API_URL, hasValidOpenRouterKey, MAX_CONTENT_LENGTH, WARNING_CONTENT_LENGTH, SAFE_CONTENT_LENGTH } from '../../lib/config';
 import { ApiKeySetup } from '../../components/ApiKeySetup';
 import { generateFlashcards, GeneratedFlashcard } from '../../lib/aiUtils';
+import { createFlashcard } from '../../lib/api';
 
 export default function Dashboard() {
   const [user, setUser] = useState<any>(null);
@@ -136,21 +137,21 @@ export default function Dashboard() {
       // Process each flashcard sequentially to avoid race conditions
       for (const card of flashcards) {
         try {
-          const result = await supabase
-            .from('flashcards')
-            .insert({
-              deck_id: selectedDeckId,
-              front_text: card.question,
-              back_text: card.answer,
-              interval: 1,
-              next_review: today
-            });
+          const newCard = {
+            deck_id: selectedDeckId,
+            front_text: card.question,
+            back_text: card.answer,
+            interval: 1,
+            next_review: today
+          };
           
-          if (!result.error) {
+          const result = await createFlashcard(newCard);
+          
+          if (result) {
             savedCount++;
           } else {
             failedCount++;
-            console.error('Error inserting flashcard:', result.error);
+            console.error('Error inserting flashcard: Permission denied or invalid data');
           }
         } catch (insertError) {
           failedCount++;
@@ -159,7 +160,7 @@ export default function Dashboard() {
       }
       
       if (savedCount === 0) {
-        throw new Error('Failed to save any flashcards. Please try again.');
+        throw new Error('Failed to save any flashcards. Please verify you have permission to add to this deck.');
       }
       
       let successMessage = `Successfully generated and saved ${savedCount} flashcards to the selected deck!`;

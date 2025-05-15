@@ -125,7 +125,7 @@ export default function GenerateFlashcardsPage({ params }: { params: Promise<{ i
             savedCount++;
           } else {
             failedCount++;
-            console.error('Failed to save flashcard:', card);
+            console.error('Failed to save flashcard: Permission denied or invalid data');
           }
         } catch (err) {
           failedCount++;
@@ -134,7 +134,7 @@ export default function GenerateFlashcardsPage({ params }: { params: Promise<{ i
       }
       
       if (savedCount === 0) {
-        throw new Error('Failed to save any flashcards. Please try again.');
+        throw new Error('Failed to save any flashcards. Please verify you have permission to add to this deck.');
       }
       
       let successMessage = `Successfully saved ${savedCount} flashcards!`;

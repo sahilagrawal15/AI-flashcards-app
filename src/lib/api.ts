@@ -179,6 +179,31 @@ export async function getFlashcardsForReview(deckId: string): Promise<Flashcard[
 
 export async function createFlashcard(flashcard: NewFlashcard): Promise<Flashcard | null> {
   try {
+    // First verify that the user has permission to add to this deck
+    const { data: session } = await supabase.auth.getSession();
+    if (!session?.session?.user) {
+      console.error('Error creating flashcard: No authenticated user');
+      return null;
+    }
+
+    // Check if the deck belongs to the current user
+    const { data: deckData, error: deckError } = await supabase
+      .from('decks')
+      .select('user_id')
+      .eq('id', flashcard.deck_id)
+      .single();
+
+    if (deckError || !deckData) {
+      console.error('Error creating flashcard: Could not verify deck ownership', deckError);
+      return null;
+    }
+
+    if (deckData.user_id !== session.session.user.id) {
+      console.error('Error creating flashcard: User does not own this deck');
+      return null;
+    }
+
+    // Now insert the flashcard
     const { data, error } = await supabase
       .from('flashcards')
       .insert(flashcard)
