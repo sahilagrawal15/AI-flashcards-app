@@ -1,10 +1,8 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   output: 'standalone',
-  // Enable if you're using Supabase Auth with Next.js App Router
-  experimental: {
-    serverComponentsExternalPackages: ['@supabase/ssr']
-  },
+  // Updated config for Next.js 15
+  serverExternalPackages: ['@supabase/ssr'],
   // Environment variables that should be available to the client
   env: {
     NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL,
