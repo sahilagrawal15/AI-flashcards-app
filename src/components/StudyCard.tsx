@@ -28,7 +28,11 @@ export function StudyCard({ card, onComplete, onSkip }: StudyCardProps) {
         next_review: nextReview.toISOString(),
       });
       
-      onComplete(updatedCard);
+      if (updatedCard) {
+        onComplete(updatedCard);
+      } else {
+        console.error('Failed to update flashcard: null response');
+      }
     } catch (err) {
       console.error('Error updating flashcard review:', err);
     } finally {

@@ -11,8 +11,6 @@ const nextConfig = {
   // Production optimizations
   poweredByHeader: false,
   reactStrictMode: true,
-  // Improve performance by swcMinify
-  swcMinify: true,
   // Handle API routes
   rewrites: async () => {
     return [];
