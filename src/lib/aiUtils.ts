@@ -28,9 +28,10 @@ export interface GeneratedFlashcard {
 /**
  * Generates flashcards from content using OpenRouter API
  * @param content The content to generate flashcards from
+ * @param count Number of flashcards to generate (default: 5)
  * @returns Array of generated flashcards
  */
-export async function generateFlashcards(content: string): Promise<GeneratedFlashcard[]> {
+export async function generateFlashcards(content: string, count: number = 5): Promise<GeneratedFlashcard[]> {
   // Check if API key is available
   if (!OPENROUTER_API_KEY) {
     throw new Error('OpenRouter API key is not configured. Please add it to your .env.local file.');
@@ -38,6 +39,7 @@ export async function generateFlashcards(content: string): Promise<GeneratedFlas
 
   debugLog('Using API key:', OPENROUTER_API_KEY ? `${OPENROUTER_API_KEY.substring(0, 5)}...` : 'Not set');
   debugLog('Using API URL:', OPENROUTER_API_URL);
+  debugLog('Requested flashcard count:', count);
 
   // Prepare content - trim to avoid excessive whitespace
   const trimmedContent = content.trim();
@@ -56,7 +58,7 @@ export async function generateFlashcards(content: string): Promise<GeneratedFlas
       {
         role: 'system',
         content: `You are an expert educational assistant that creates high-quality flashcards.
-Your task is to create exactly 5 question-answer pairs from the provided content.
+Your task is to create exactly ${count} question-answer pairs from the provided content.
 Focus on the most important concepts, definitions, and facts.
 Each flashcard should have a clear question and a concise, accurate answer.
 You MUST format your response as a valid JSON array with objects containing 'question' and 'answer' fields.
@@ -69,7 +71,7 @@ Example of valid JSON format:
       },
       {
         role: 'user',
-        content: `Create 5 flashcards from the following content.
+        content: `Create ${count} flashcards from the following content.
 Format your response as a valid JSON array with objects containing 'question' and 'answer' fields.
 The response should be ONLY the JSON array, with no additional text.
 Example format:

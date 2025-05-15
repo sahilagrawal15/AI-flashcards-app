@@ -13,6 +13,7 @@ export default function GenerateFlashcardsPage({ params }: { params: Promise<{ i
   const resolvedParams = use(params);
   const [content, setContent] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
+  const [isAddingMore, setIsAddingMore] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
@@ -20,6 +21,7 @@ export default function GenerateFlashcardsPage({ params }: { params: Promise<{ i
   const [user, setUser] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [generatedFlashcards, setGeneratedFlashcards] = useState<GeneratedFlashcard[]>([]);
+  const [cardCount, setCardCount] = useState<number>(5);
   const router = useRouter();
   const deckId = resolvedParams.id;
 
@@ -79,8 +81,8 @@ export default function GenerateFlashcardsPage({ params }: { params: Promise<{ i
     setGeneratedFlashcards([]);
     
     try {
-      // Generate flashcards using the utility function
-      const flashcards = await generateFlashcards(content);
+      // Generate flashcards using the utility function with the specified count
+      const flashcards = await generateFlashcards(content, cardCount);
       
       // Show the generated flashcards
       setGeneratedFlashcards(flashcards);
@@ -90,6 +92,45 @@ export default function GenerateFlashcardsPage({ params }: { params: Promise<{ i
       setError(err instanceof Error ? err.message : 'Failed to generate flashcards. Please try again.');
     } finally {
       setIsGenerating(false);
+    }
+  };
+  
+  const handleAddMoreFlashcards = async () => {
+    if (!content.trim()) {
+      setError('Please enter some content to generate flashcards from.');
+      return;
+    }
+    
+    // Check if API key is available
+    if (!hasValidOpenRouterKey()) {
+      setError('OpenRouter API key is missing. Please add it to your environment variables.');
+      return;
+    }
+    
+    setIsAddingMore(true);
+    setError(null);
+    setSuccess(null);
+    
+    try {
+      // Generate additional flashcards using the utility function
+      const newFlashcards = await generateFlashcards(content, cardCount);
+      
+      // Append the new flashcards to the existing ones
+      setGeneratedFlashcards(prevCards => [...prevCards, ...newFlashcards]);
+      
+      // Show success message
+      setSuccess(`${newFlashcards.length} new cards added!`);
+      
+      // Clear success message after 3 seconds
+      setTimeout(() => {
+        setSuccess(null);
+      }, 3000);
+      
+    } catch (err) {
+      console.error('Error generating additional flashcards:', err);
+      setError(err instanceof Error ? err.message : 'Failed to generate additional flashcards. Please try again.');
+    } finally {
+      setIsAddingMore(false);
     }
   };
   
@@ -207,6 +248,23 @@ export default function GenerateFlashcardsPage({ params }: { params: Promise<{ i
                 </p>
               </div>
               
+              <div className="mb-4">
+                <label htmlFor="card-count" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  How many cards to generate?
+                </label>
+                <select
+                  id="card-count"
+                  value={cardCount}
+                  onChange={(e) => setCardCount(Number(e.target.value))}
+                  className="block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                >
+                  <option value={5}>5 cards</option>
+                  <option value={10}>10 cards</option>
+                  <option value={15}>15 cards</option>
+                  <option value={20}>20 cards</option>
+                </select>
+              </div>
+              
               {error && (
                 <div className="mb-4 rounded-md bg-red-50 dark:bg-red-900/20 p-4">
                   <div className="flex">
@@ -227,10 +285,10 @@ export default function GenerateFlashcardsPage({ params }: { params: Promise<{ i
                 </div>
               )}
               
-              <div className="mt-5">
+              <div className="mt-5 flex flex-wrap gap-3">
                 <button
                   type="submit"
-                  disabled={isGenerating || !content.trim() || isSaving}
+                  disabled={isGenerating || !content.trim() || isSaving || isAddingMore}
                   className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:bg-indigo-500 dark:hover:bg-indigo-600 disabled:opacity-50"
                 >
                   {isGenerating ? (
@@ -245,6 +303,27 @@ export default function GenerateFlashcardsPage({ params }: { params: Promise<{ i
                     'Generate Flashcards'
                   )}
                 </button>
+                
+                {generatedFlashcards.length > 0 && (
+                  <button
+                    type="button"
+                    onClick={handleAddMoreFlashcards}
+                    disabled={isAddingMore || !content.trim() || isSaving || isGenerating}
+                    className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-purple-600 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 dark:bg-purple-500 dark:hover:bg-purple-600 disabled:opacity-50"
+                  >
+                    {isAddingMore ? (
+                      <>
+                        <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        Adding More Cards...
+                      </>
+                    ) : (
+                      'Add More Cards'
+                    )}
+                  </button>
+                )}
               </div>
             </form>
             
@@ -252,7 +331,7 @@ export default function GenerateFlashcardsPage({ params }: { params: Promise<{ i
             {generatedFlashcards.length > 0 && (
               <div className="mt-8 border-t border-gray-200 dark:border-gray-700 pt-6">
                 <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">
-                  Generated Flashcards
+                  Generated Flashcards ({generatedFlashcards.length})
                 </h3>
                 <div className="space-y-4">
                   {generatedFlashcards.map((card, index) => (
@@ -267,7 +346,7 @@ export default function GenerateFlashcardsPage({ params }: { params: Promise<{ i
                   <button
                     type="button"
                     onClick={handleSaveFlashcards}
-                    disabled={isSaving}
+                    disabled={isSaving || isGenerating || isAddingMore}
                     className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 dark:bg-green-500 dark:hover:bg-green-600 disabled:opacity-50"
                   >
                     {isSaving ? (

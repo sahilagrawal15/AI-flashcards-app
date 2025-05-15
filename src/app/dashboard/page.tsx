@@ -22,6 +22,7 @@ export default function Dashboard() {
   const [isGenerating, setIsGenerating] = useState(false);
   const [generationSuccess, setGenerationSuccess] = useState<string | null>(null);
   const [generationError, setGenerationError] = useState<string | null>(null);
+  const [cardCount, setCardCount] = useState<number>(5);
   const router = useRouter();
 
   useEffect(() => {
@@ -126,8 +127,8 @@ export default function Dashboard() {
     setGenerationSuccess(null);
     
     try {
-      // Generate flashcards using the utility function
-      const flashcards = await generateFlashcards(content);
+      // Generate flashcards using the utility function with the specified count
+      const flashcards = await generateFlashcards(content, cardCount);
       
       // Save flashcards to the database
       const today = new Date().toISOString();
@@ -301,6 +302,25 @@ export default function Dashboard() {
                           {deck.name}
                         </option>
                       ))}
+                    </select>
+                  </div>
+                </div>
+                
+                <div>
+                  <label htmlFor="card-count" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                    How many cards to generate?
+                  </label>
+                  <div className="mt-1">
+                    <select
+                      id="card-count"
+                      value={cardCount}
+                      onChange={(e) => setCardCount(Number(e.target.value))}
+                      className="block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                    >
+                      <option value={5}>5 cards</option>
+                      <option value={10}>10 cards</option>
+                      <option value={15}>15 cards</option>
+                      <option value={20}>20 cards</option>
                     </select>
                   </div>
                 </div>
